@@ -59,6 +59,18 @@ pub fn with<T: AsRef<OsStr>>(path: T, app: impl Into<String>) -> io::Result<()> 
         .into_result()
 }
 
+pub fn with_args<T, I>(path: T, app: impl Into<String>, args: I) -> io::Result<()>
+where
+    T: AsRef<OsStr>,
+    I: IntoIterator<Item = T>,
+{
+    Command::new(app.into())
+        .args::<I, T>(args.into())
+        .arg(path.as_ref())
+        .status_without_output()
+        .into_result()
+}
+
 // Polyfill to workaround absolute path bug in wslu(wslview). In versions before
 // v3.1.1, wslview is unable to find absolute paths. `wsl_path` converts an
 // absolute path into a relative path starting from the current directory. If

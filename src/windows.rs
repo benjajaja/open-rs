@@ -64,3 +64,33 @@ pub fn with<T: AsRef<OsStr>>(path: T, app: impl Into<String>) -> io::Result<()> 
     };
     (result as c_int).into_result()
 }
+
+pub fn with_args<T, I>(path: T, app: impl Into<String>, args: I) -> io::Result<()>
+where
+    T: AsRef<OsStr>,
+    I: IntoIterator<Item = T>,
+{
+    let mut args = convert_path(path.as_ref())?;
+    args.pop();
+    for arg in args.into() {
+        args.push(" ");
+        args.push(arg);
+    }
+    args.push(0);
+
+    let operation: Vec<u16> = OsStr::new("open\0").encode_wide().collect();
+    let app_name: Vec<u16> = OsStr::new(&format!("{}\0", app.into()))
+        .encode_wide()
+        .collect();
+    let result = unsafe {
+        ShellExecuteW(
+            0,
+            operation.as_ptr(),
+            app_name.as_ptr(),
+            args.as_ptr(),
+            ptr::null(),
+            SW_SHOW,
+        )
+    };
+    (result as c_int).into_result()
+}

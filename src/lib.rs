@@ -131,6 +131,36 @@ pub fn with<T: AsRef<OsStr>>(path: T, app: impl Into<String>) -> io::Result<()> 
     os::with(path, app)
 }
 
+/// Open path with the given application and arguments.
+///
+/// This function may block if the application doesn't detach itself.
+/// In that case, consider using [`with_args_in_background()`].
+///
+/// # Examples
+///
+/// ```no_run
+/// let path = "http://rust-lang.org";
+/// let app = "firefox";
+/// let args = vec!["--new-window"];
+///
+/// match open::with_args(path, app, args) {
+///     Ok(()) => println!("Opened '{}' successfully.", path),
+///     Err(err) => panic!("An error occurred when opening '{}': {}", path, err),
+/// }
+/// ```
+///
+/// # Errors
+///
+/// A [`std::io::Error`] is returned on failure. Because different operating systems
+/// handle errors differently it is recommend to not match on a certain error.
+pub fn with_args<T, I>(path: T, app: impl Into<String>, args: I) -> io::Result<()>
+where
+    T: AsRef<OsStr>,
+    I: IntoIterator<Item = T>,
+{
+    os::with_args(path, app, args)
+}
+
 /// Open path with the default application in a new thread.
 ///
 /// See documentation of [`that()`] for more details.
